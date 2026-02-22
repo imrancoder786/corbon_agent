@@ -6,18 +6,17 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export class SupplierDiscoveryAgent {
   async discover(companyName: string): Promise<Supplier[]> {
-    // In a real scenario, this would search the web or a DB.
-    // We will use Gemini to simulate a realistic supplier list for the requested company.
-    
     const model = "gemini-3-flash-preview";
     const prompt = `
-      Generate a realistic list of 5 key suppliers for the company "${companyName}".
+      Find 5 ACTUAL key suppliers or supply chain partners for the company "${companyName}" using Google Search.
+      If exact suppliers are not public, identify major companies in their likely supply chain (e.g., for an auto manufacturer, find major steel, battery, or tire suppliers).
+
       For each supplier, provide:
-      1. Name
-      2. Industry (e.g., Steel, Electronics, Logistics)
-      3. Location (City, Country)
-      4. Estimated Carbon Emissions (Normalized 0.0 to 1.0, where 1.0 is very high)
-      5. Compliance Flags (Integer 0 to 5, representing minor past issues)
+      1. Name (Real company name)
+      2. Industry
+      3. Location (Headquarters or major factory location)
+      4. Estimated Carbon Emissions (Normalized 0.0 to 1.0 based on industry intensity. e.g., Steel=0.9, Software=0.1)
+      5. Compliance Flags (Integer 0 to 5, based on public controversies found)
 
       Return ONLY a JSON array of objects. No markdown formatting.
       Format:
@@ -37,7 +36,8 @@ export class SupplierDiscoveryAgent {
         model,
         contents: prompt,
         config: {
-          responseMimeType: "application/json"
+          responseMimeType: "application/json",
+          tools: [{ googleSearch: {} }]
         }
       });
 

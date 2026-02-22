@@ -7,17 +7,17 @@ export class MonitorAgent {
   async monitor(supplier: Supplier): Promise<RiskSignals> {
     const model = "gemini-3-flash-preview";
     const prompt = `
-      Analyze potential ESG risks for the supplier "${supplier.name}" in the "${supplier.industry}" industry located in "${supplier.location}".
+      Perform a real-time ESG risk analysis for the supplier "${supplier.name}" located in "${supplier.location}" (Industry: "${supplier.industry}").
       
-      Simulate a check for:
-      1. Adverse Media (Negative news coverage)
-      2. Regulatory Action (Fines, lawsuits)
-      3. Safety Violations (Workplace accidents)
-      4. ESG Controversies (Pollution, labor rights)
+      Use Google Search to find ACTUAL recent news, reports, or controversies.
+      Look for:
+      1. Adverse Media (Negative news coverage, scandals)
+      2. Regulatory Action (Fines, lawsuits, government sanctions)
+      3. Safety Violations (Workplace accidents, labor strikes)
+      4. ESG Controversies (Pollution, human rights issues)
 
-      Based on the industry and typical risks, probabilistically generate a realistic risk profile. 
-      High emission industries (Steel, Mining) should have higher risk of ESG controversies.
-      
+      If no specific information is found for this exact supplier, infer realistic risks based on recent events in their specific industry and location (e.g., "Steel industry in India facing new carbon tax regulations").
+
       Return ONLY a JSON object.
       Format:
       {
@@ -25,7 +25,7 @@ export class MonitorAgent {
         "regulatoryAction": boolean,
         "safetyViolation": boolean,
         "esgControversies": boolean,
-        "details": ["string array of 1-2 specific simulated headlines or findings"]
+        "details": ["string array of 2-3 specific headlines or findings found via search"]
       }
     `;
 
@@ -34,7 +34,8 @@ export class MonitorAgent {
         model,
         contents: prompt,
         config: {
-          responseMimeType: "application/json"
+          responseMimeType: "application/json",
+          tools: [{ googleSearch: {} }]
         }
       });
 
